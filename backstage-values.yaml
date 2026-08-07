@@ -36,7 +36,28 @@ commonLabels: {}
 commonAnnotations: {}
 
 # -- Array of extra objects to deploy with the release
-extraDeploy: []
+extraDeploy:
+  - apiVersion: networking.k8s.io/v1
+    kind: Ingress
+    metadata:
+      name: backstage
+    spec:
+      ingressClassName: traefik
+      tls:
+        - hosts:
+            - backstage.example
+          secretName: backstage-tls
+      rules:
+        - host: backstage.example
+          http:
+            paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: backstage
+                    port:
+                      number: 7007
 
 # -- Enable diagnostic mode in the Deployment
 diagnosticMode:
@@ -150,7 +171,7 @@ backstage:
     registry: ghcr.io
 
     # -- Backstage image repository
-    repository: backstage/backstage
+    repository: lukasb27/backstage-app
 
     # -- Backstage image tag (immutable tags are recommended)
     tag: latest
@@ -193,7 +214,7 @@ backstage:
   command: ["node", "packages/backend"]
 
   # -- Backstage container command arguments
-  args: []
+  args: ["--config", "app-config.yaml", "--config", "app-config.production.yaml"]
 
   # -- Extra app configuration files to inline into command arguments
   extraAppConfig: []
