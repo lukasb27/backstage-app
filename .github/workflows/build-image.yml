@@ -3,9 +3,11 @@ name: Build and push image
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - backstage-values.yaml
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 env:
@@ -41,3 +43,12 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:${{ github.sha }}
             ${{ env.IMAGE_NAME }}:latest
+
+      - name: Bump image tag in backstage-values.yaml
+        run: |
+          sed -i "s|tag: .*|tag: ${{ github.sha }}|" backstage-values.yaml
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add backstage-values.yaml
+          git commit -m "Deploy ${{ github.sha }}"
+          git push

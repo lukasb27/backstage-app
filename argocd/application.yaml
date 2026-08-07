@@ -22,6 +22,9 @@ spec:
     namespace: backstage
 
   syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
     syncOptions:
       - CreateNamespace=false
       - Replace=true
