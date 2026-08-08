@@ -9,8 +9,9 @@ backend:
 auth:
   providers:
     github:
-      clientId: ${AUTH_GITHUB_CLIENT_ID}
-      clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+      development:
+        clientId: ${AUTH_GITHUB_CLIENT_ID}
+        clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
     guest:
       dangerouslyAllowOutsideDevelopment: true
 
