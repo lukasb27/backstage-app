@@ -26,6 +26,9 @@ catalog:
       target: ./examples/template/template.yaml
       rules:
         - allow: [Template]
+    
+    - type: file
+      target: ./catalog-info.yaml
 
     # Local example organizational data
     - type: file
