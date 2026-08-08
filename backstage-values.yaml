@@ -229,7 +229,8 @@ backstage:
   extraEnvVarsCM: []
 
   # -- Backstage container environment variables from existing Secrets
-  extraEnvVarsSecrets: []
+  extraEnvVarsSecrets:
+    - github-oauth
 
   # -- Backstage container additional ports
   extraPorts: []
