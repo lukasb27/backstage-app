@@ -11,3 +11,17 @@ spec:
   type: website
   owner: john@example.com
   lifecycle: experimental
+
+---
+
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: backstage-service
+  description: Backstage control repo
+  annotations:
+    github.com/project-slug: 'lukasb27/backstage-app'
+spec:
+  type: service
+  lifecycle: production
+  owner: lukas
