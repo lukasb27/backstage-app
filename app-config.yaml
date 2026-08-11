@@ -150,7 +150,7 @@ kubernetes:
           name: homelab
           authProvider: 'serviceAccount'
           caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-          skipMetricsLookup: true
+          skipMetricsLookup: false
           dashboardApp: 'headlamp'
           dashboardUrl: 'http://headlamp.example'
 
