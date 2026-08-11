@@ -11,10 +11,7 @@ app:
         config:
           path: /
     - entity-content:kubernetes/kubernetes:
-        config:
-          filter:
-            metadata.annotations.backstage.io/kubernetes-id:
-              $exists: true
+
 organization:
   name: My Company
 
@@ -144,6 +141,18 @@ catalog:
 
 kubernetes:
   # see https://backstage.io/docs/features/kubernetes/configuration for kubernetes configuration options
+  serviceLocatorMethod:
+    type: 'multiTenant'
+  clusterLocatorMethods:
+    - type: 'config'
+      clusters:
+        - url: https://kubernetes.default.svc
+          name: homelab
+          authProvider: 'serviceAccount'
+          caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          skipMetricsLookup: true
+          dashboardApp: 'headlamp'
+          dashboardUrl: 'http://headlamp.example'
 
 # see https://backstage.io/docs/permissions/getting-started for more on the permission framework
 permission:
