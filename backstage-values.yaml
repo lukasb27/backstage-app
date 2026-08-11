@@ -174,7 +174,7 @@ backstage:
     repository: lukasb27/backstage-app
 
     # -- Backstage image tag (immutable tags are recommended)
-    tag: 7dbd86e0dad92703c11d3f78baabf7fe448c06a1
+    tag: 12fa6f88b527f1cf12e85410a765cabbed5b6577
 
     # -- Backstage image digest (digest takes precedence over image tag)
     digest: ""
