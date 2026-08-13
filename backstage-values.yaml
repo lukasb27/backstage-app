@@ -223,7 +223,12 @@ backstage:
   extraContainers: []
 
   # -- Backstage container environment variables
-  extraEnvVars: []
+  extraEnvVars:
+    - name: GITHUB_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: backstage-scaffolder-github-token
+          key: token
 
   # -- Backstage container environment variables from existing ConfigMaps
   extraEnvVarsCM: []
