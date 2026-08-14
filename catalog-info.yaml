@@ -5,6 +5,7 @@ metadata:
   description: Backstage control repo
   annotations:
     github.com/project-slug: 'lukasb27/backstage-app'
+    backstage.io/techdocs-ref: dir:.
 spec:
   type: website
   lifecycle: production
