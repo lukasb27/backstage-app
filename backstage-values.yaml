@@ -163,7 +163,8 @@ backstage:
   #   rollingUpdate:
   #     maxSurge: 0
   #     maxUnavailable: 1 -->
-  strategy: {}
+  strategy:
+    type: Recreate
 
   image:
 
@@ -229,6 +230,31 @@ backstage:
         secretKeyRef:
           name: backstage-scaffolder-github-token
           key: token
+    - name: POSTGRES_HOST
+      valueFrom:
+        secretKeyRef:
+          name: backstage-db-app
+          key: host
+    - name: POSTGRES_PORT
+      valueFrom:
+        secretKeyRef:
+          name: backstage-db-app
+          key: port
+    - name: POSTGRES_USER
+      valueFrom:
+        secretKeyRef:
+          name: backstage-db-app
+          key: user
+    - name: POSTGRES_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: backstage-db-app
+          key: password
+    - name: POSTGRES_DB
+      valueFrom:
+        secretKeyRef:
+          name: backstage-db-app
+          key: dbname
 
   # -- Backstage container environment variables from existing ConfigMaps
   extraEnvVarsCM: []
