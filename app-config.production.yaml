@@ -38,7 +38,14 @@ catalog:
       target: ./examples/template/template.yaml
       rules:
         - allow: [Template]
-    
+
+    # http-service golden-path template. type: url has no revision pin — it
+    # always tracks backstage-templates' default branch.
+    - type: url
+      target: https://github.com/lukasb27/backstage-templates/blob/main/templates/http-service/template.yaml
+      rules:
+        - allow: [Template]
+
     - type: file
       target: ./catalog-info.yaml
 
