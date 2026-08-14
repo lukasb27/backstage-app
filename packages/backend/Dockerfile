@@ -32,6 +32,14 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get install -y --no-install-recommends libsqlite3-dev && \
     rm -rf /var/lib/apt/lists/*
 
+# TechDocs generator.runIn: 'local' needs mkdocs-techdocs-core in the image (no Docker socket in the pod)
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && \
+    apt-get install -y --no-install-recommends python3-pip && \
+    pip3 install --break-system-packages mkdocs-techdocs-core && \
+    rm -rf /var/lib/apt/lists/*
+
 # From here on we use the least-privileged `node` user to run the backend.
 USER node
 
