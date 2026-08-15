@@ -14,11 +14,13 @@ migrations before it starts serving requests. This is baked into
 entrypoint — there is no separate "migrate only" mode; booting the backend
 *is* running the migrations.
 
-Migrations are DDL (`ALTER TABLE`, `CREATE INDEX`, …), not DML — unlike normal
-read/write queries, which many replicas are designed to run concurrently
-against the same tables, two processes racing to apply the *same* schema
-change against the *same* database is a real correctness risk: lock
-contention, deadlocks, or a corrupted migration-tracking table. A standard
+Migrations are schema-changing operations — Data Definition Language (DDL),
+such as `ALTER TABLE` or `CREATE INDEX` — not the ordinary read/write queries
+(Data Manipulation Language, or DML: `SELECT`, `INSERT`, `UPDATE`, …) that
+many replicas are designed to run concurrently against the same tables. Two
+processes racing to apply the *same* schema change against the *same*
+database is a real correctness risk: lock contention, deadlocks, or a
+corrupted migration-tracking table. A standard
 Kubernetes `RollingUpdate` briefly runs the old and new pod together — that
 overlap is exactly what makes it zero-downtime — but if both pods are
 Backstage, both attempt migrations at once.
