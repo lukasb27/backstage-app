@@ -2,7 +2,15 @@ import { createApp } from '@backstage/frontend-defaults';
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
 import { navModule } from './modules/nav';
 import githubActionsPlugin from '@backstage-community/plugin-github-actions/alpha';
+import techDocsPlugin from '@backstage/plugin-techdocs/alpha';
+import { techDocsMermaidAddonModule } from 'backstage-plugin-techdocs-addon-mermaid';
 
 export default createApp({
-  features: [catalogPlugin, githubActionsPlugin, navModule],
+  features: [
+    catalogPlugin,
+    githubActionsPlugin,
+    navModule,
+    techDocsPlugin,
+    techDocsMermaidAddonModule,
+  ],
 });
