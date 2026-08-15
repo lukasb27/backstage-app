@@ -46,6 +46,14 @@ catalog:
       rules:
         - allow: [Template]
 
+    # backstage-templates' own docs (platform architecture — see docs/architecture.md),
+    # separate from the Template entity above so this repo shows up as a browsable
+    # Component with a real TechDocs page, not just a scaffolder source.
+    - type: url
+      target: https://github.com/lukasb27/backstage-templates/blob/main/catalog-info.yaml
+      rules:
+        - allow: [Component]
+
     - type: file
       target: ./catalog-info.yaml
 
