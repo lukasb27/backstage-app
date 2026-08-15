@@ -77,6 +77,13 @@ techdocs:
     runIn: 'local' # was 'docker' — no Docker socket in the pod (see P-2)
   publisher:
     type: 'local' # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
+  # Wide sequence diagrams (e.g. the golden-path architecture doc) can't be both
+  # fully visible and large-text in the docs content column at once — the SVG
+  # scales down to fit the column width regardless of the diagram's own sizing
+  # config. Zoom (ctrl/cmd+scroll, drag to pan) is the addon's built-in answer.
+  addons:
+    mermaid:
+      enableZoom: true
 
 auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
