@@ -4,7 +4,8 @@ nav:
   - Home: index.md
   - ADRs:
       - Custom Image + GitOps CD: custom-backstage-image-gitops-cd-adr.md
-      - DB Migration PreSync Hook: backstage-db-migration-presync-hook-adr.md
+      - DB Migration PreSync Hook (Rejected): backstage-db-migration-presync-hook-adr.md
+      - RollingUpdate preStop Hook: backstage-prestop-hook-adr.md
 plugins:
   - techdocs-core
 markdown_extensions:
