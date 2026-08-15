@@ -59,78 +59,6 @@ extraDeploy:
                     port:
                       number: 7007
 
-  # Runs DB migrations once, before every sync, so the main Deployment's pods
-  # (skipMigrations: true, see backstage.appConfig above) never attempt them.
-  # See docs/backstage-db-migration-presync-hook-adr.md for the full reasoning.
-  - apiVersion: batch/v1
-    kind: Job
-    metadata:
-      name: backstage-db-migrate
-      annotations:
-        argocd.argoproj.io/hook: PreSync
-        argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
-    spec:
-      backoffLimit: 1
-      activeDeadlineSeconds: 180
-      template:
-        spec:
-          restartPolicy: Never
-          serviceAccountName: '{{ include "backstage.serviceAccountName" . }}'
-          containers:
-            - name: migrate
-              image: '{{ include "backstage.image" . }}'
-              command:
-                - sh
-                - -c
-                - |
-                  node packages/backend --config app-config.yaml --config app-config.production.yaml &
-                  PID=$!
-                  i=0
-                  while [ $i -lt 60 ]; do
-                    if node -e "require('http').get('http://localhost:7007/.backstage/health/v1/readiness', r => process.exit(r.statusCode===200?0:1)).on('error', () => process.exit(1))"; then
-                      echo "Backend ready — migrations complete. Shutting down cleanly."
-                      kill $PID
-                      wait $PID 2>/dev/null
-                      exit 0
-                    fi
-                    i=$((i+1))
-                    sleep 2
-                  done
-                  echo "Timed out waiting for backend readiness — migrations may have failed. Failing the hook."
-                  kill $PID 2>/dev/null
-                  exit 1
-              env: &backstageExtraEnvVars
-                - name: GITHUB_TOKEN
-                  valueFrom:
-                    secretKeyRef:
-                      name: backstage-scaffolder-github-token
-                      key: token
-                - name: POSTGRES_HOST
-                  valueFrom:
-                    secretKeyRef:
-                      name: backstage-db-app
-                      key: host
-                - name: POSTGRES_PORT
-                  valueFrom:
-                    secretKeyRef:
-                      name: backstage-db-app
-                      key: port
-                - name: POSTGRES_USER
-                  valueFrom:
-                    secretKeyRef:
-                      name: backstage-db-app
-                      key: user
-                - name: POSTGRES_PASSWORD
-                  valueFrom:
-                    secretKeyRef:
-                      name: backstage-db-app
-                      key: password
-                - name: POSTGRES_DB
-                  valueFrom:
-                    secretKeyRef:
-                      name: backstage-db-app
-                      key: dbname
-
 # -- Enable diagnostic mode in the Deployment
 diagnosticMode:
 
@@ -227,11 +155,17 @@ backstage:
   revisionHistoryLimit: 10
 
   # -- Deployment [update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).
-  # Safe to use RollingUpdate (rather than Recreate) here because migrations no
-  # longer run in this Deployment's pods at all — see the PreSync migration Job
-  # in extraDeploy below and docs/backstage-db-migration-presync-hook-adr.md.
+  # RollingUpdate (rather than Recreate) is safe here because at replicas: 1
+  # with maxSurge: 1, Kubernetes only ever creates one new-version pod at a
+  # time — the "two pods racing to run the same migration" risk that
+  # Recreate originally guarded against never actually arises at this
+  # replica count, migrations left running inline (the Backstage default) or
+  # not. See docs/backstage-db-migration-presync-hook-adr.md (a fuller fix
+  # was tried and rejected — the write-up there explains why the simpler
+  # option here is also the better one). Revisit if replicas ever grows
+  # beyond 1: that's the point this concurrency risk becomes real.
   # maxSurge: 1, maxUnavailable: 0 means a new pod starts and becomes Ready
-  # before the old one is terminated — genuinely zero-downtime with replicas: 1.
+  # before the old one is terminated — genuinely zero-downtime.
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -296,7 +230,37 @@ backstage:
   extraContainers: []
 
   # -- Backstage container environment variables
-  extraEnvVars: *backstageExtraEnvVars
+  extraEnvVars:
+    - name: GITHUB_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: backstage-scaffolder-github-token
+          key: token
+    - name: POSTGRES_HOST
+      valueFrom:
+        secretKeyRef:
+          name: backstage-db-app
+          key: host
+    - name: POSTGRES_PORT
+      valueFrom:
+        secretKeyRef:
+          name: backstage-db-app
+          key: port
+    - name: POSTGRES_USER
+      valueFrom:
+        secretKeyRef:
+          name: backstage-db-app
+          key: user
+    - name: POSTGRES_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: backstage-db-app
+          key: password
+    - name: POSTGRES_DB
+      valueFrom:
+        secretKeyRef:
+          name: backstage-db-app
+          key: dbname
 
   # -- Backstage container environment variables from existing ConfigMaps
   extraEnvVarsCM: []
@@ -406,13 +370,7 @@ backstage:
   #   app:
   #     baseUrl: https://somedomain.tld
   # -- Generates ConfigMap and configures it in the Backstage pods
-  # skipMigrations: true here means this Deployment's own pods never attempt
-  # migrations — only the PreSync Job (extraDeploy, below) does. See
-  # docs/backstage-db-migration-presync-hook-adr.md.
-  appConfig:
-    backend:
-      database:
-        skipMigrations: true
+  appConfig: {}
 
   # -- Affinity for pod assignment
   # <br /> Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity

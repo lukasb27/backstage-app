@@ -1,7 +1,59 @@
 # Separate DB Migrations from the Deployment Rollout via an Argo CD PreSync Hook
 
 ## Status
-Accepted
+Rejected — see Rejection Rationale below. Superseded by simply switching
+`strategy` to `RollingUpdate` and leaving migrations running inline (no
+dedicated migration Job).
+
+## Rejection Rationale
+
+Added 2026-08-15, before this ever merged — closer review surfaced two
+problems with this design at the deployment's actual configuration
+(`replicas: 1`, `maxSurge: 1`, `maxUnavailable: 0`):
+
+**1. The concurrency risk this was built to prevent was never live at this
+replica count.** The Decision section below frames "two processes racing to
+apply the same migration" as the driving risk. But `maxSurge: 1` means
+`RollingUpdate` never creates more than one new-version pod at a time,
+regardless of whether migrations run inline (the default) or in a separate
+hook. There was no concurrent-migration race for this hook to actually
+prevent here — the risk it exists to solve requires multiple *new-version*
+pods booting together, which needs `replicas > 1` or `maxSurge > 1`, neither
+of which apply.
+
+**2. The design makes the risk that *is* real — old code running against a
+schema a migration already changed — worse, not better.** Under the previous
+`Recreate` strategy, the old pod was killed completely *before* any migration
+ran, so there was zero window where old code coexisted with a changed schema.
+This design moves the migration to run *before* the rollout even starts —
+meaning the old pod now keeps running against the fully-migrated schema for
+the entire PreSync hook's duration, plus the whole `RollingUpdate` overlap
+that follows. That's a *longer* exposure to schema/code incompatibility than
+either the old `Recreate` approach (zero exposure, by construction) or the
+simpler alternative below (exposure bounded to just the new pod's own,
+migration-inclusive startup time).
+
+**What replaces it:** switch `strategy` from `Recreate` to `RollingUpdate`
+and leave migrations running inline, exactly as Backstage does by default —
+no PreSync Job, no `skipMigrations`. Strictly simpler, sidesteps the
+concurrency risk by construction (never live at this replica count either
+way), and bounds the schema/code exposure window to the shortest of the
+options considered. The remaining trade-off — a brief window where old code
+could hit an incompatible new migration — is the same one effectively every
+application deployed via `RollingUpdate` with in-process migrations accepts;
+it's bounded by the "expand/contract" discipline discussed in Consequences
+below, not eliminated by any deploy-orchestration mechanism, this design
+included.
+
+**Revisit if `replicas` is ever increased beyond 1** — that's the point at
+which the concurrency race this design anticipated becomes real, and a
+dedicated migration step (this design, or Backstage's own tooling if it ships
+one by then) would be worth the added complexity again.
+
+---
+
+The rest of this document is kept as-is, as the historical record of what was
+proposed and why it initially seemed reasonable.
 
 ## Context
 
