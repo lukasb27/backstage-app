@@ -48,12 +48,11 @@ spec:
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: fermentation-station-argocd-control
-  description: Fermentation station argo cd control repo 
+  name: application-argocd-control
+  description: Application-level Argo CD control repo — persistent + ephemeral Argo CD environments for every golden-path service (not core platform infra — see homelab-argocd-control for that)
   annotations:
-    github.com/project-slug: 'lukasb27/fermentation-station-argocd-control'
+    github.com/project-slug: 'lukasb27/application-argocd-control'
 spec:
   type: service
   lifecycle: experimental
   owner: lukas
-  system: fermentation-station
