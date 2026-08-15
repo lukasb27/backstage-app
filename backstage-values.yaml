@@ -155,16 +155,22 @@ backstage:
   revisionHistoryLimit: 10
 
   # -- Deployment [update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).
-  # When unset, Kubernetes applies its default (RollingUpdate with maxSurge 25% and maxUnavailable 25%).
-  # Set to `Recreate` (or `RollingUpdate` with `maxSurge: 0`) to guarantee a single Backstage pod runs at a time, which is recommended when plugin database migrations run on startup to avoid concurrent migration attempts.
-  # <!-- E.g.
-  # strategy:
-  #   type: RollingUpdate
-  #   rollingUpdate:
-  #     maxSurge: 0
-  #     maxUnavailable: 1 -->
+  # RollingUpdate (rather than Recreate) is safe here because at replicas: 1
+  # with maxSurge: 1, Kubernetes only ever creates one new-version pod at a
+  # time — the "two pods racing to run the same migration" risk that
+  # Recreate originally guarded against never actually arises at this
+  # replica count, migrations left running inline (the Backstage default) or
+  # not. See docs/backstage-db-migration-presync-hook-adr.md (a fuller fix
+  # was tried and rejected — the write-up there explains why the simpler
+  # option here is also the better one). Revisit if replicas ever grows
+  # beyond 1: that's the point this concurrency risk becomes real.
+  # maxSurge: 1, maxUnavailable: 0 means a new pod starts and becomes Ready
+  # before the old one is terminated — genuinely zero-downtime.
   strategy:
-    type: Recreate
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
 
   image:
 

@@ -2,5 +2,14 @@ site_name: 'backstage-service'
 site_description: 'Backstage control repo'
 nav:
   - Home: index.md
+  - ADRs:
+      - Custom Image + GitOps CD: custom-backstage-image-gitops-cd-adr.md
+      - DB Migration PreSync Hook: backstage-db-migration-presync-hook-adr.md
 plugins:
   - techdocs-core
+markdown_extensions:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
