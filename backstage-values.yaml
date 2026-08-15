@@ -353,6 +353,19 @@ backstage:
       port: 7007
       scheme: HTTP
 
+  # -- Lifecycle hooks for the Backstage container
+  # <br /> Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
+  # A pod is removed from the Service's routing table and sent SIGTERM in
+  # parallel, not in that order — a request can land on a pod that's already
+  # stopped listening, in the gap before every kube-proxy/Ingress catches up
+  # to the routing change. This delays SIGTERM just long enough for that
+  # propagation to finish first, observed live as a single 502 during a
+  # RollingUpdate cutover on 2026-08-15 without it.
+  lifecycleHooks:
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "sleep 5"]
+
   # -- Security settings for a Pod.
   #  The security settings that you specify for a Pod apply to all Containers in the Pod.
   # <br /> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
