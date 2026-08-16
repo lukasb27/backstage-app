@@ -6,7 +6,7 @@ import {
 } from '@backstage/integration';
 import type { ActionContext } from '@backstage/plugin-scaffolder-node';
 import { Octokit } from 'octokit';
-import { createRestrictPrCreationAction } from './goldenPathActions';
+import { createRestrictPrCreationAction } from '../goldenPathActions';
 
 jest.mock('octokit');
 
