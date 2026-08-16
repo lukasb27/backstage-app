@@ -46,7 +46,16 @@ jobs:
 
       - name: Bump image tag in backstage-values.yaml
         run: |
-          sed -i "s|tag: .*|tag: ${{ github.sha }}|" backstage-values.yaml
+          # Matches only a "tag:" line whose current value is a 40-char hex
+          # commit SHA, not any "tag:" line — narrower than the old blanket
+          # `s|tag: .*|...|`, which would silently rewrite a second "tag:" key
+          # too if one is ever added elsewhere in this file (a sidecar image,
+          # another subchart value). Tried yq and ruamel.yaml first: both
+          # reformat the file on write (yq drops every blank line; ruamel
+          # reindents every list under a mapping key and rewrites explicit
+          # nulls) — worse than the problem being fixed, given this is a
+          # hand-maintained values file with a lot of "# --" doc comments.
+          sed -i -E "s|tag: [0-9a-f]{40}|tag: ${{ github.sha }}|" backstage-values.yaml
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add backstage-values.yaml
