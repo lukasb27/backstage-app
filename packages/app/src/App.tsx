@@ -4,12 +4,14 @@ import { navModule } from './modules/nav';
 import githubActionsPlugin from '@backstage-community/plugin-github-actions/alpha';
 import techDocsPlugin from '@backstage/plugin-techdocs/alpha';
 import { techDocsMermaidAddonModule } from 'backstage-plugin-techdocs-addon-mermaid';
+import { examplePlugin } from './plugin';
 
 export default createApp({
   features: [
     catalogPlugin,
     githubActionsPlugin,
     navModule,
+    examplePlugin,
     techDocsPlugin,
     techDocsMermaidAddonModule,
   ],
