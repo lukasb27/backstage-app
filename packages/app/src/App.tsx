@@ -5,6 +5,7 @@ import githubActionsPlugin from '@backstage-community/plugin-github-actions/alph
 import techDocsPlugin from '@backstage/plugin-techdocs/alpha';
 import { techDocsMermaidAddonModule } from 'backstage-plugin-techdocs-addon-mermaid';
 import { examplePlugin } from './plugin';
+import staleEnvironmentFinderPlugin from '@internal/backstage-plugin-stale-environment-finder';
 
 export default createApp({
   features: [
@@ -14,5 +15,6 @@ export default createApp({
     examplePlugin,
     techDocsPlugin,
     techDocsMermaidAddonModule,
+    staleEnvironmentFinderPlugin
   ],
 });
