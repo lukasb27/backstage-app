@@ -266,11 +266,6 @@ backstage:
         secretKeyRef:
           name: backstage-db-app
           key: dbname
-    - name: ARGO_TOKEN
-      valueFrom:
-        secretKeyRef:
-          name: argo-token
-          key: argotoken
 
   # -- Backstage container environment variables from existing ConfigMaps
   extraEnvVarsCM: []
