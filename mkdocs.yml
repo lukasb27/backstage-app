@@ -2,6 +2,8 @@ site_name: 'backstage-service'
 site_description: 'Backstage control repo'
 nav:
   - Home: index.md
+  - Guides:
+      - Building the Stale Environment Finder Plugin: stale-environment-finder-plugin-guide.md
   - ADRs:
       - Custom Image + GitOps CD: custom-backstage-image-gitops-cd-adr.md
       - DB Migration PreSync Hook (Rejected): backstage-db-migration-presync-hook-adr.md
