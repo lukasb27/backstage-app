@@ -236,6 +236,11 @@ backstage:
         secretKeyRef:
           name: backstage-scaffolder-github-token
           key: token
+    - name: ARGO_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: backstage-argo-token
+          key: token
     - name: POSTGRES_HOST
       valueFrom:
         secretKeyRef:
@@ -261,6 +266,11 @@ backstage:
         secretKeyRef:
           name: backstage-db-app
           key: dbname
+    - name: ARGO_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: argo-token
+          key: argotoken
 
   # -- Backstage container environment variables from existing ConfigMaps
   extraEnvVarsCM: []

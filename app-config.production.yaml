@@ -1,6 +1,8 @@
 app:
   baseUrl: https://backstage.example
-
+argo:
+  token: ${ARGO_TOKEN}
+  baseUrl: https://argocd-server.argocd.svc.cluster.local
 backend:
   baseUrl: https://backstage.example
   listen:
