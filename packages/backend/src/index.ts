@@ -71,7 +71,6 @@ backend.add(import('@backstage/plugin-signals-backend'));
 backend.add(import('@backstage/plugin-mcp-actions-backend'));
 
 backend.add(import('@backstage/plugin-auth-backend-module-github-provider'));
-backend.add(import('./plugin'));
 
 backend.add(import('@internal/backstage-plugin-stale-environment-finder-backend'));
 backend.start();

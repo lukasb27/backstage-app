@@ -34,13 +34,25 @@ export async function createRouter({
   })
 
   router.get('/environments', async (req, res) => {
-      const argoApplications = await listApplications(argoToken, argoBaseUrl)
       const query = environmentsSchema.safeParse(req.query);
       if (!query.success) {
         throw new InputError(query.error.toString());
       }
       const { owner, repo } = query.data;
-      const prs = await listPullRequests(integrations, logger, 'github.com', owner, repo)
+
+      // Argo doesnt have a call to get a specific application for a repo. So call all applications then filter it down per repo.
+      const argoApplications = (await listApplications(argoToken, argoBaseUrl)).filter((application) => application.spec.source?.kustomize?.commonAnnotations?.repoSlug === `${owner}/${repo}`)
+      
+      // Build an array of pr numbers that are associated with argo/repo.
+      const prsInArgo: string[] = [];
+      for (const application of argoApplications){ 
+        const prNumber = application.spec.source?.kustomize?.commonAnnotations?.prNumber
+        if (!prNumber) continue;
+        prsInArgo.push(prNumber);
+      }
+
+
+      const prs = await listPullRequests(integrations, logger, 'github.com', owner, repo, prsInArgo)
       const prMap = new Map<string, PrState>();
       for (const pr of prs) {
         prMap.set(pr.prNumber.toString(), pr)

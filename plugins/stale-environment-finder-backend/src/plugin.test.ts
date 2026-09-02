@@ -1,129 +1,28 @@
-import {
-  mockCredentials,
-  startTestBackend,
-} from '@backstage/backend-test-utils';
-import { createServiceFactory } from '@backstage/backend-plugin-api';
-import { todoListServiceRef } from './services/TodoListService';
-import { staleEnvironmentFinderPlugin } from './plugin';
+import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
 import request from 'supertest';
-import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
-import {
-  ConflictError,
-  AuthenticationError,
-  NotAllowedError,
-} from '@backstage/errors';
 
-// TEMPLATE NOTE:
-// Plugin tests are integration tests for your plugin, ensuring that all pieces
-// work together end-to-end. You can still mock injected backend services
-// however, just like anyone who installs your plugin might replace the
-// services with their own implementations.
+import { staleEnvironmentFinderPlugin } from './plugin';
+
 describe('plugin', () => {
-  it('should create and read TODO items', async () => {
-    const { server } = await startTestBackend({
-      features: [staleEnvironmentFinderPlugin],
-    });
-
-    await request(server).get('/api/stale-environment-finder/todos').expect(200, {
-      items: [],
-    });
-
-    const createRes = await request(server)
-      .post('/api/stale-environment-finder/todos')
-      .send({ title: 'My Todo' });
-
-    expect(createRes.status).toBe(201);
-    expect(createRes.body).toEqual({
-      id: expect.any(String),
-      title: 'My Todo',
-      createdBy: mockCredentials.user().principal.userEntityRef,
-      createdAt: expect.any(String),
-    });
-
-    const createdTodoItem = createRes.body;
-
-    await request(server)
-      .get('/api/stale-environment-finder/todos')
-      .expect(200, {
-        items: [createdTodoItem],
-      });
-
-    await request(server)
-      .get(`/api/stale-environment-finder/todos/${createdTodoItem.id}`)
-      .expect(200, createdTodoItem);
-  });
-
-  it('should create TODO item with catalog information', async () => {
+  it('boots with argo config and mounts the /environments route', async () => {
     const { server } = await startTestBackend({
       features: [
         staleEnvironmentFinderPlugin,
-        catalogServiceMock.factory({
-          entities: [
-            {
-              apiVersion: 'backstage.io/v1alpha1',
-              kind: 'Component',
-              metadata: {
-                name: 'my-component',
-                namespace: 'default',
-                title: 'My Component',
-              },
-              spec: {
-                type: 'service',
-                owner: 'me',
-              },
+        mockServices.rootConfig.factory({
+          data: {
+            argo: {
+              token: 'test-token',
+              baseUrl: 'https://argocd.example.com',
             },
-          ],
+          },
         }),
       ],
     });
 
-    const createRes = await request(server)
-      .post('/api/stale-environment-finder/todos')
-      .send({ title: 'My Todo', entityRef: 'component:default/my-component' });
+    const response = await request(server).get(
+      '/api/stale-environment-finder/environments',
+    );
 
-    expect(createRes.status).toBe(201);
-    expect(createRes.body).toEqual({
-      id: expect.any(String),
-      title: '[My Component] My Todo',
-      createdBy: mockCredentials.user().principal.userEntityRef,
-      createdAt: expect.any(String),
-    });
-  });
-
-  it('should forward errors from the TodoListService', async () => {
-    const { server } = await startTestBackend({
-      features: [
-        staleEnvironmentFinderPlugin,
-        createServiceFactory({
-          service: todoListServiceRef,
-          deps: {},
-          factory: () => ({
-            createTodo: jest.fn().mockRejectedValue(new ConflictError()),
-            listTodos: jest.fn().mockRejectedValue(new AuthenticationError()),
-            getTodo: jest.fn().mockRejectedValue(new NotAllowedError()),
-          }),
-        })
-      ],
-    });
-
-    const createRes = await request(server)
-      .post('/api/stale-environment-finder/todos')
-      .send({ title: 'My Todo', entityRef: 'component:default/my-component' });
-    expect(createRes.status).toBe(409);
-    expect(createRes.body).toMatchObject({
-      error: { name: 'ConflictError' },
-    });
-
-    const listRes = await request(server).get('/api/stale-environment-finder/todos');
-    expect(listRes.status).toBe(401);
-    expect(listRes.body).toMatchObject({
-      error: { name: 'AuthenticationError' },
-    });
-
-    const getRes = await request(server).get('/api/stale-environment-finder/todos/123');
-    expect(getRes.status).toBe(403);
-    expect(getRes.body).toMatchObject({
-      error: { name: 'NotAllowedError' },
-    });
+    expect(response.status).toBe(400);
   });
 });

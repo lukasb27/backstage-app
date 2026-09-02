@@ -12,10 +12,25 @@ export function getStaleEnvironments (repoPrs: Map<string, PrState>, argoApps: I
 
     for (const application of argoApps) {
         const prNumber = application.spec.source?.kustomize?.commonAnnotations?.prNumber
+        
         if (!prNumber) continue;
         const pr = repoPrs.get(prNumber)
-    
-        environments.push({prNumber: prNumber, stale: pr?.prState !== 'open', reason: `PR is in ${pr?.prState} state`, applicationName: application.metadata.name!})
+
+        let stale: boolean;
+        let reason: string;
+        
+        if (!pr) {
+            stale = false;
+            reason = 'no matching PR found';
+        } else if (pr.prState === 'open') {
+            stale = false;
+            reason = 'PR is open'
+        } else {
+            stale = true;
+            reason = `PR is ${pr.prState}`;
+        }
+
+        environments.push({prNumber: prNumber, stale: stale, reason: reason, applicationName: application.metadata.name!})
         
     }
 

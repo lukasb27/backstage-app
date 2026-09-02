@@ -24,10 +24,12 @@ export function EnvironmentContents() {
   const projectSlug = entity.metadata.annotations?.[GITHUB_PROJECT_SLUG_ANNOTATION];
   const [owner, repo] = projectSlug?.split('/') ?? [];
 
-  const { value, loading, error } = useAsync(
-    async () => api.getEnvironments(owner, repo),
-    [api, owner, repo],
-  );
+  const { value, loading, error } = useAsync(async () => {
+    if (!owner || !repo) {
+      return [];
+    }
+    return api.getEnvironments(owner, repo);
+  }, [api, owner, repo]);
 
   if (!projectSlug) {
     return <MissingAnnotationEmptyState annotation={GITHUB_PROJECT_SLUG_ANNOTATION} />;
