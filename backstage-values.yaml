@@ -58,6 +58,33 @@ extraDeploy:
                     name: backstage
                     port:
                       number: 7007
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: argocd-ca-cert
+    data:
+      ca.crt: |
+        -----BEGIN CERTIFICATE-----
+        MIIDYzCCAkugAwIBAgIRAK7clt8WA+gG+Njt/O/cIpowDQYJKoZIhvcNAQELBQAw
+        EjEQMA4GA1UEChMHQXJnbyBDRDAeFw0yNjAyMTQxNDMwNTBaFw0yNzAyMTQxNDMw
+        NTBaMBIxEDAOBgNVBAoTB0FyZ28gQ0QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw
+        ggEKAoIBAQDTAASI6fDQbLtHBd/5KTfZ8tvGhl11v43ihi/p0yH+jk1JRwPjsyAV
+        eekvgwcjEdHxVm/I5ORP1BzQaL/DRUzDTBXK1Y7LaFqDpnjX2KHuJtcTCDe2wibZ
+        0dH/zveI/Aig0b0WtMlHVldDvw5ZiOWW3GUOBM9IObOiW5SSMQlKzepLQH1flNxA
+        R1Y6IUTmZnHT4sc4yvN6uiO4bnpv9BM9g4Z3TMKwSf68EUjh0BrmuUmrjDGdsb5E
+        3cvacoa/p2fVe3qKtfuZ7Qmqfac4vPuK0ribGS2Phh5vjxr9fB7ntTL8QSZSJI3/
+        VC9bLVYwctUQt4nriPEpF/GfVrqkGDVZAgMBAAGjgbMwgbAwDgYDVR0PAQH/BAQD
+        AgWgMBMGA1UdJQQMMAoGCCsGAQUFBwMBMAwGA1UdEwEB/wQCMAAwewYDVR0RBHQw
+        coIJbG9jYWxob3N0gg1hcmdvY2Qtc2VydmVyghRhcmdvY2Qtc2VydmVyLmFyZ29j
+        ZIIYYXJnb2NkLXNlcnZlci5hcmdvY2Quc3ZjgiZhcmdvY2Qtc2VydmVyLmFyZ29j
+        ZC5zdmMuY2x1c3Rlci5sb2NhbDANBgkqhkiG9w0BAQsFAAOCAQEAFv4C32yuLWFw
+        1elwgoZZakqKYKLIWVq8qXscn32QvBJ8XWfQdE0u5VmEmQipav+7/4bz9pYVU9E4
+        ujfPAUeTRnvOgIpxFhZBUN14fECibeDmrEeT5lX3PwsumiT4F0LQ+bViJc3i0Ld/
+        P7awM+LMNYUxXkkKxfCe8xrTv7DlbNgRBw9rqGKc+PfCiDFkHipc0q5xd4pzxhBB
+        tA64qGhB3IqHCv0nQ64lC0iTPZ3Uf7GWojzYgqh9VbDIL/x6IKEGG6QCRE6eI+KA
+        utLDuhW/+DgAtcGqwU3Q0RU4OaZtig6IvJoDFemPEPXUgC/HgclHzEIID5Q3eHBA
+        rHQWWIdD8A==
+        -----END CERTIFICATE-----
 
 # -- Enable diagnostic mode in the Deployment
 diagnosticMode:
@@ -241,6 +268,8 @@ backstage:
         secretKeyRef:
           name: backstage-argo-token
           key: token
+    - name: NODE_EXTRA_CA_CERTS
+      value: /certs/argocd-ca.crt
     - name: POSTGRES_HOST
       valueFrom:
         secretKeyRef:
@@ -278,10 +307,17 @@ backstage:
   extraPorts: []
 
   # -- Backstage container additional volume mounts
-  extraVolumeMounts: []
+  extraVolumeMounts:
+    - name: argocd-ca-cert
+      mountPath: /certs/argocd-ca.crt
+      subPath: ca.crt
+      readOnly: true
 
   # -- Backstage container additional volumes
-  extraVolumes: []
+  extraVolumes:
+    - name: argocd-ca-cert
+      configMap:
+        name: argocd-ca-cert
 
   # -- Backstage container init containers
   initContainers: []
