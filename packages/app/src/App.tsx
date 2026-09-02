@@ -4,6 +4,7 @@ import { navModule } from './modules/nav';
 import githubActionsPlugin from '@backstage-community/plugin-github-actions/alpha';
 import techDocsPlugin from '@backstage/plugin-techdocs/alpha';
 import { techDocsMermaidAddonModule } from 'backstage-plugin-techdocs-addon-mermaid';
+import staleEnvironmentFinderPlugin from '@internal/backstage-plugin-stale-environment-finder';
 
 export default createApp({
   features: [
@@ -12,5 +13,6 @@ export default createApp({
     navModule,
     techDocsPlugin,
     techDocsMermaidAddonModule,
+    staleEnvironmentFinderPlugin
   ],
 });
